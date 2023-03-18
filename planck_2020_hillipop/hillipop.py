@@ -275,6 +275,10 @@ class _HillipopLikelihood(InstallableLikelihood):
         for xf in range(self._nxfreq):
             lmin = self._lmins[mode][self._xspec2xfreq.index(xf)]
             lmax = self._lmaxs[mode][self._xspec2xfreq.index(xf)]
+            if mode == 1 and hasattr(self, 'EElmin') and not self.EElmin is None:
+                acl[xf, lmin : self.EElmin] = 0
+            if mode == 0 and hasattr(self, 'TTlmax') and not self.TTlmax is None:
+                acl[xf, self.TTlmax + 1 : lmax + 1] = 0
             xl += list(acl[xf, lmin : lmax + 1])
         return xl
 
@@ -439,6 +443,12 @@ class _HillipopLikelihood(InstallableLikelihood):
 #        dlth["TE"] = dl["te"][lth]
         dlth = {k.upper():dl[k][:self.lmax+1] for k in dl.keys()}
         dlth['ET'] = dlth['TE']
+
+        if "A_LISW" in params_values and not params_values["A_LISW"] is None:
+            # print(f'{params_values["A_LISW"]=}')
+            # print(dlth[0][30:], '---->', sep='\n')
+            dlth[0][30:] += params_values["A_LISW"] / np.arange(30, self.lmax + 1)**2
+            # print(dlth[0][30:])
 
         chi2 = self.compute_chi2(dlth, **params_values)
 
